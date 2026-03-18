@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { overlaps } from '@/lib/bookings'
+import { sendBookingApproved, sendBookingRejected } from '@/lib/email'
 import type { Booking } from '@prisma/client'
 
 const auth = (req: NextRequest) =>
@@ -39,6 +40,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         data: { status, adminNote: adminNote ?? '', reviewedAt: new Date() },
       })
     })
+
+    // Send email notification (non-blocking)
+    const emailFn = status === 'approved' ? sendBookingApproved : sendBookingRejected
+    emailFn({ ...booking, adminNote: adminNote ?? '' }).catch(console.error)
 
     return NextResponse.json({ booking })
   } catch (e) {

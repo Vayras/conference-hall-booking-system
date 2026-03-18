@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { overlaps, addMins, toMins } from '@/lib/bookings'
+import { sendBookingReceived, sendBookingApproved } from '@/lib/email'
 
 const VALID_ROOMS = ['502', 'aqua', 'ignis']
 const VALID_DURATIONS = [30, 60, 90, 120, 150, 180, 210, 240]
@@ -42,11 +43,20 @@ export async function POST(req: NextRequest) {
       }, { status: 409 })
     }
 
+    // Auto-approve bookings ≤ 2 hours; longer ones need admin review
+    const autoApprove = dur <= 120
     const booking = await prisma.booking.create({
-      data: { room, date, startTime, endTime, duration: dur, name, email: email.toLowerCase().trim(), cause, justification },
+      data: { room, date, startTime, endTime, duration: dur, name, email: email.toLowerCase().trim(), cause, justification, status: autoApprove ? 'approved' : 'pending' },
     })
 
-    return NextResponse.json({ booking }, { status: 201 })
+    // Send email (non-blocking)
+    if (autoApprove) {
+      sendBookingApproved({ ...booking, adminNote: '' }).catch(console.error)
+    } else {
+      sendBookingReceived(booking).catch(console.error)
+    }
+
+    return NextResponse.json({ booking, autoApproved: autoApprove }, { status: 201 })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: 'Server error.' }, { status: 500 })
