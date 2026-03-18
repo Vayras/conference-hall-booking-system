@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F5F3EE">
+<title>BookSpace Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE; --white: #FFFFFF; --border: #E4E0D6;
+  --text: #1C1A16; --muted: #7A7468; --faint: #B4AFA6;
+  --c502: #C47A0E; --c502-bg: #FFFBF0; --c502-b: #F0D080;
+  --caqu: #0891B2; --caqu-bg: #F0FBFF; --caqu-b: #90D8F0;
+  --cign: #D42020; --cign-bg: #FFF4F4; --cign-b: #F0B0B0;
+  --accent: #4361EE; --accent-h: #3251D8;
+  --ok: #16A34A; --ok-bg: #F0FDF4;
+  --warn: #D97706; --warn-bg: #FFFBEB;
+  --danger: #DC2626; --danger-bg: #FEF2F2;
+  --r: 14px; --r-sm: 8px; --r-lg: 20px;
+  --sh: 0 1px 3px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.07);
+  --sh-sm: 0 1px 3px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: 'Fraunces', serif; }
+
+/* ── Login ── */
+#login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.login-card {
+  width: 100%; max-width: 360px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 40px 32px;
+  box-shadow: var(--sh); text-align: center;
+}
+.login-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.login-logo span { color: var(--accent); }
+.login-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+.login-card input {
+  width: 100%; padding: 13px 16px; margin-bottom: 12px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); font-family: inherit; font-size: 15px; color: var(--text);
+  outline: none; text-align: center; letter-spacing: .1em;
+  transition: border-color .2s;
+}
+.login-card input:focus { border-color: var(--accent); }
+.login-card input.err { border-color: var(--danger); }
+.login-btn {
+  width: 100%; padding: 14px; background: var(--text); color: white;
+  border: none; border-radius: var(--r-sm); font-family: inherit; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s; margin-bottom: 16px;
+}
+.login-btn:hover { opacity: .85; }
+.hint { font-size: 12px; color: var(--faint); }
+
+/* ── Dashboard ── */
+#dashboard { display: none; }
+header {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(245,243,238,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+.logo small { font-size: 11px; font-weight: 500; color: var(--muted); display: block; line-height: 1; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.btn-sm {
+  padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 500;
+  border-radius: 50px; cursor: pointer; transition: all .2s; border: 1px solid var(--border);
+  background: transparent; color: var(--muted);
+}
+.btn-sm:hover { background: var(--white); color: var(--text); }
+
+main { max-width: 640px; margin: 0 auto; padding: 0 20px 80px; }
+
+/* ── Stats ── */
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 24px 0 20px; }
+.stat {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 12px; text-align: center;
+  cursor: pointer; transition: all .2s; box-shadow: var(--sh-sm);
+}
+.stat:hover, .stat.active { border-color: var(--accent); background: rgba(67,97,238,.04); }
+.stat-num { display: block; font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
+.stat-num.pending { color: var(--warn); }
+.stat-num.approved { color: var(--ok); }
+.stat-num.rejected { color: var(--danger); }
+.stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* ── Filters ── */
+.filters { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 7px 16px; font-family: inherit; font-size: 13px; font-weight: 500;
+  border-radius: 50px; cursor: pointer; transition: all .2s;
+  border: 1.5px solid var(--border); background: var(--white); color: var(--muted);
+}
+.filter-btn:hover { border-color: var(--faint); color: var(--text); }
+.filter-btn.active { background: var(--text); color: white; border-color: var(--text); }
+
+/* ── Booking Cards ── */
+.empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--muted); font-size: 15px;
+}
+.empty span { display: block; font-size: 36px; margin-bottom: 12px; }
+
+.booking-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); margin-bottom: 12px; overflow: hidden;
+  box-shadow: var(--sh-sm); transition: box-shadow .2s;
+}
+.booking-card:hover { box-shadow: var(--sh); }
+.card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.card-header-left { flex: 1; min-width: 0; }
+.card-title {
+  font-weight: 600; font-size: 15px; margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.room-tag {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 50px;
+}
+.room-tag.r502 { background: var(--c502-bg); color: var(--c502); border: 1px solid var(--c502-b); }
+.room-tag.raqu { background: var(--caqu-bg); color: var(--caqu); border: 1px solid var(--caqu-b); }
+.room-tag.rign { background: var(--cign-bg); color: var(--cign); border: 1px solid var(--cign-b); }
+.badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 50px; text-transform: capitalize; }
+.badge.pending { background: var(--warn-bg); color: var(--warn); }
+.badge.approved { background: var(--ok-bg); color: var(--ok); }
+.badge.rejected { background: var(--danger-bg); color: var(--danger); }
+.card-body { padding: 14px 18px; }
+.card-row { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.card-row svg { flex-shrink: 0; }
+.card-row:last-child { margin-bottom: 0; }
+.card-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.card-submitter { font-size: 13px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.card-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+.btn-approve, .btn-reject, .btn-review {
+  padding: 9px 18px; font-family: inherit; font-size: 13px; font-weight: 600;
+  border-radius: var(--r-sm); cursor: pointer; transition: all .2s; border: none;
+}
+.btn-approve { background: var(--ok-bg); color: var(--ok); border: 1.5px solid #86EFAC; }
+.btn-approve:hover { background: var(--ok); color: white; }
+.btn-reject { background: var(--danger-bg); color: var(--danger); border: 1.5px solid #FCA5A5; }
+.btn-reject:hover { background: var(--danger); color: white; }
+.btn-review { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); margin-left: auto; }
+.btn-review:hover { background: var(--white); color: var(--text); }
+.admin-note-display { font-size: 12px; color: var(--muted); font-style: italic; padding: 8px 12px; background: var(--bg); border-radius: var(--r-sm); margin-top: 10px; }
+.booking-id { font-size: 11px; color: var(--faint); font-family: monospace; margin-top: 8px; }
+
+/* ── Review Modal ── */
+.overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(28,26,22,.5); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.modal-card {
+  width: 100%; max-width: 480px; background: var(--white);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: 28px 24px 48px;
+  transform: translateY(40px); transition: transform .35s cubic-bezier(.16,1,.3,1);
+}
+.overlay.show .modal-card { transform: translateY(0); }
+.modal-card h2 { font-size: 20px; margin-bottom: 16px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.modal-field textarea {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); font-family: inherit; font-size: 14px; color: var(--text);
+  resize: vertical; min-height: 80px; outline: none; transition: border-color .2s;
+}
+.modal-field textarea:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions button { flex: 1; padding: 13px; font-family: inherit; font-size: 14px; font-weight: 600; border-radius: var(--r-sm); cursor: pointer; border: none; transition: all .2s; }
+#modal-approve { background: var(--ok); color: white; }
+#modal-approve:hover { background: #138A3D; }
+#modal-reject { background: var(--danger); color: white; }
+#modal-reject:hover { background: #B91C1C; }
+.modal-cancel { display: block; text-align: center; margin-top: 14px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.modal-cancel:hover { color: var(--text); }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: white;
+  padding: 12px 20px; border-radius: 50px; font-size: 14px; font-weight: 500;
+  z-index: 600; opacity: 0; transition: all .3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { background: var(--ok); }
+.toast.err { background: var(--danger); }
+
+@media (min-width: 640px) {
+  main { padding: 0 24px 80px; }
+  .overlay { align-items: center; }
+  .modal-card { border-radius: var(--r-lg); margin: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Book<span>Space</span> Admin</div>
+    <p>Enter the admin password to continue</p>
+    <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="hint">Default password: admin2024</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <header>
+    <div class="logo">
+      BookSpace
+      <small>Admin Dashboard</small>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn-sm">← App</a>
+      <button class="btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats">
+      <div class="stat" onclick="setFilter('pending')">
+        <span class="stat-num pending" id="cnt-pending">0</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat" onclick="setFilter('approved')">
+        <span class="stat-num approved" id="cnt-approved">0</span>
+        <span class="stat-label">Approved</span>
+      </div>
+      <div class="stat" onclick="setFilter('rejected')">
+        <span class="stat-num rejected" id="cnt-rejected">0</span>
+        <span class="stat-label">Rejected</span>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-f="all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" data-f="pending" onclick="setFilter('pending',this)">Pending</button>
+      <button class="filter-btn" data-f="approved" onclick="setFilter('approved',this)">Approved</button>
+      <button class="filter-btn" data-f="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+    </div>
+
+    <div id="bookings-list"></div>
+  </main>
+</div>
+
+<!-- Review Modal -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <h2>Review Request</h2>
+    <div class="modal-field">
+      <label>Admin Note (optional)</label>
+      <textarea id="modal-note" placeholder="Add a note for the requester…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button id="modal-approve" onclick="confirmAction('approved')">✓ Approve</button>
+      <button id="modal-reject" onclick="confirmAction('rejected')">✕ Reject</button>
+    </div>
+    <span class="modal-cancel" onclick="closeModal()">Cancel</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const PASS = 'admin2024';
+let currentFilter = 'all', pendingId = null;
+
+const DB = {
+  get: () => JSON.parse(localStorage.getItem('bs_bookings') || '[]'),
+  set: d => localStorage.setItem('bs_bookings', JSON.stringify(d)),
+  update(id, u) {
+    const d = this.get(), i = d.findIndex(b => b.id === id);
+    if (i > -1) { d[i] = {...d[i], ...u}; this.set(d); return d[i]; }
+  }
+};
+
+const toMins = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+const fmtTime = t => {
+  const m = toMins(t), h = Math.floor(m/60), min = m%60;
+  return `${h>12?h-12:h||12}:${String(min).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+};
+const fmtDate = d => new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
+const roomName = r => ({'502':'Conf. Hall 502',aqua:'Aqua',ignis:'Ignis'}[r] || r);
+const roomClass = r => ({'502':'r502',aqua:'raqu',ignis:'rign'}[r]);
+
+// ── Auth ──
+function doLogin() {
+  const pw = $('pw-input').value;
+  if (pw === PASS) {
+    $('login-screen').style.display = 'none';
+    $('dashboard').style.display = 'block';
+    sessionStorage.setItem('bs_admin', '1');
+    render();
+  } else {
+    $('pw-input').classList.add('err');
+    $('pw-input').value = '';
+    $('pw-input').placeholder = 'Wrong password';
+    setTimeout(() => { $('pw-input').classList.remove('err'); $('pw-input').placeholder = '••••••••'; }, 2000);
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('bs_admin');
+  $('dashboard').style.display = 'none';
+  $('login-screen').style.display = 'flex';
+  $('pw-input').value = '';
+}
+
+// ── Render ──
+function render() {
+  const all = DB.get().sort((a,b) => {
+    // Pending first, then by date
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (b.status === 'pending' && a.status !== 'pending') return 1;
+    return b.createdAt - a.createdAt;
+  });
+
+  $('cnt-pending').textContent = all.filter(b => b.status==='pending').length;
+  $('cnt-approved').textContent = all.filter(b => b.status==='approved').length;
+  $('cnt-rejected').textContent = all.filter(b => b.status==='rejected').length;
+
+  const list = currentFilter === 'all' ? all : all.filter(b => b.status === currentFilter);
+  const el = $('bookings-list');
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><span>📋</span>${currentFilter==='all'?'No booking requests yet.':'No '+currentFilter+' requests.'}</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(b => `
+    <div class="booking-card" id="card-${b.id}">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-title">${esc(b.cause)}</div>
+          <div class="card-meta">
+            <span class="room-tag ${roomClass(b.room)}">${roomName(b.room)}</span>
+            <span class="badge ${b.status}">${b.status}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${fmtDate(b.date)} &nbsp;·&nbsp; ${fmtTime(b.startTime)} – ${fmtTime(b.endTime)} (${b.duration >= 60 ? (b.duration/60)+'h' : b.duration+'m'})
+        </div>
+        <div class="card-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          ${esc(b.name)} &nbsp;·&nbsp; ${esc(b.email)}
+        </div>
+        <div class="card-text">${esc(b.justification)}</div>
+        ${b.adminNote ? `<div class="admin-note-display">Note: "${esc(b.adminNote)}"</div>` : ''}
+        <div class="booking-id">${b.id}</div>
+      </div>
+      <div class="card-footer">
+        ${b.status === 'pending' ? `
+          <button class="btn-approve" onclick="openModal('${b.id}','approve')">✓ Approve</button>
+          <button class="btn-reject" onclick="openModal('${b.id}','reject')">✕ Reject</button>
+        ` : `
+          <button class="btn-review" onclick="openModal('${b.id}','review')">✎ Update Status</button>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Filter ──
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const b = document.querySelector(`[data-f="${f}"]`);
+    if (b) { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); b.classList.add('active'); }
+  }
+  render();
+}
+
+// ── Modal ──
+function openModal(id, action) {
+  pendingId = id;
+  $('modal-note').value = DB.get().find(b=>b.id===id)?.adminNote || '';
+  if (action === 'approve') {
+    $('modal-approve').style.display = 'block';
+    $('modal-reject').style.display = 'none';
+  } else if (action === 'reject') {
+    $('modal-approve').style.display = 'none';
+    $('modal-reject').style.display = 'block';
+  } else {
+    $('modal-approve').style.display = 'block';
+    $('modal-reject').style.display = 'block';
+  }
+  $('overlay').classList.add('show');
+  $('modal-note').focus();
+}
+
+function closeModal(e) {
+  if (e && e.target !== $('overlay')) return;
+  $('overlay').classList.remove('show');
+  pendingId = null;
+}
+
+function confirmAction(status) {
+  if (!pendingId) return;
+  DB.update(pendingId, { status, adminNote: $('modal-note').value.trim(), reviewedAt: Date.now() });
+  $('overlay').classList.remove('show');
+  pendingId = null;
+  render();
+  toast(status === 'approved' ? 'Booking approved ✓' : 'Booking rejected', status === 'approved' ? 'ok' : 'err');
+}
+
+// ── Helpers ──
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, type='') {
+  const t = $('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Init ──
+(function init() {
+  if (sessionStorage.getItem('bs_admin') === '1') {
+    $('login-screen').style.display = 'none';
+    $('dashboard').style.display = 'block';
+    render();
+  }
+  $('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+})();
+</script>
+</body>
+</html>
